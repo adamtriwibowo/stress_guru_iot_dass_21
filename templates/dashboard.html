@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analytics — IoT Stress Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* ═══════════════════════════════════════
+           DESIGN TOKENS
+        ═══════════════════════════════════════ */
+        :root {
+            --primary:      #2D7DD2;
+            --primary-dark: #1E68C4;
+            --primary-soft: #EBF4FF;
+            --secondary:    #14B8A6;
+            --secondary-soft: #EFFAF9;
+            --accent:       #7C6FCB;
+            --success:      #22C55E;
+            --success-soft: #F0FDF4;
+            --warning:      #F59E0B;
+            --warning-soft: #FFFBEB;
+            --danger:       #EF4444;
+            --danger-soft:  #FEF2F2;
+            --orange:       #F97316;
+            --orange-soft:  #FFF7ED;
+
+            --bg:      #F0F5FB;
+            --surface: #FFFFFF;
+            --border:  #E1EAF3;
+            --text:    #0F1E2E;
+            --text-mid:#3D5170;
+            --text-muted: #7E94AF;
+
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 22px;
+            --shadow-xs: 0 1px 4px rgba(15,30,60,0.06);
+            --shadow-sm: 0 4px 16px rgba(15,30,60,0.07);
+            --shadow-md: 0 8px 32px rgba(15,30,60,0.10);
+            --shadow-lg: 0 16px 48px rgba(15,30,60,0.13);
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            padding-top: 68px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ═══════════════════════════════════════
+           NAVBAR
+        ═══════════════════════════════════════ */
+        .navbar {
+            background: #FFFFFF !important;
+            border-bottom: 1px solid var(--border);
+            padding: 12px 0;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-link {
+            font-weight: 600;
+            color: var(--text-mid) !important;
+            padding: 6px 14px !important;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary) !important;
+            background: var(--primary-soft);
+        }
+
+        /* ═══════════════════════════════════════
+           PAGE HEADER
+        ═══════════════════════════════════════ */
+        .page-header {
+            background: linear-gradient(130deg, #0A1F3C 0%, #163E75 45%, #0B6E68 100%);
+            padding: 36px 0 32px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -60%; right: -10%;
+            width: 50%; height: 220%;
+            background: radial-gradient(ellipse, rgba(45,125,210,0.18) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .page-header::after {
+            content: '';
+            position: absolute;
+            bottom: -40%; left: -5%;
+            width: 40%; height: 160%;
+            background: radial-gradient(ellipse, rgba(20,184,166,0.16) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 5px 14px;
+            border-radius: 50px;
+            color: rgba(255,255,255,0.82);
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 10px;
+        }
+
+        .page-header h1 {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.025em;
+            margin-bottom: 5px;
+        }
+
+        .page-header .sub {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.9rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            transition: all 0.25s;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-header-solid {
+            background: #FFFFFF;
+            color: var(--primary);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+        }
+
+        .btn-header-solid:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+            color: var(--primary-dark);
+        }
+
+        .btn-header-ghost {
+            background: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.22);
+        }
+
+        .btn-header-ghost:hover {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        /* ═══════════════════════════════════════
+           KPI CARDS
+        ═══════════════════════════════════════ */
+        .kpi-row { margin-bottom: 28px; }
+
+        .kpi-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 24px 22px 20px;
+            border: 1.5px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s;
+            height: 100%;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Large decorative blob behind icon area */
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            width: 110px; height: 110px;
+            border-radius: 50%;
+            top: -28px; right: -28px;
+            opacity: 0.07;
+            transition: opacity 0.3s;
+        }
+
+        .kpi-card:hover::after { opacity: 0.12; }
+
+        .kpi-blue::after  { background: var(--primary); }
+        .kpi-green::after { background: var(--success); }
+        .kpi-amber::after { background: var(--warning); }
+        .kpi-teal::after  { background: var(--secondary); }
+
+        /* Colored top bar */
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .kpi-blue::before  { background: linear-gradient(90deg, var(--primary), #60a5fa); }
+        .kpi-green::before { background: linear-gradient(90deg, var(--success), #4ade80); }
+        .kpi-amber::before { background: linear-gradient(90deg, var(--warning), #fbbf24); }
+        .kpi-teal::before  { background: linear-gradient(90deg, var(--secondary), #2dd4bf); }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .kpi-label {
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 10px;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+
+        .kpi-blue  .kpi-value { color: var(--primary); }
+        .kpi-green .kpi-value { color: #16a34a; }
+        .kpi-amber .kpi-value { color: #d97706; }
+        .kpi-teal  .kpi-value { color: #0d9488; }
+
+        .kpi-icon {
+            width: 46px; height: 46px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-icon-blue  { background: var(--primary-soft);   color: var(--primary); }
+        .kpi-icon-green { background: var(--success-soft);   color: var(--success); }
+        .kpi-icon-amber { background: var(--warning-soft);   color: var(--warning); }
+        .kpi-icon-teal  { background: var(--secondary-soft); color: var(--secondary); }
+
+        .kpi-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 16px 0 12px;
+        }
+
+        .kpi-footer {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .kpi-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ═══════════════════════════════════════
+           PANELS (Charts & Table)
+        ═══════════════════════════════════════ */
+        .panel {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1.5px solid var(--border);
+            overflow: hidden;
+        }
+
+        .panel-head {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #FAFCFF;
+        }
+
+        .panel-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-icon {
+            width: 34px; height: 34px;
+            background: var(--primary-soft);
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            font-size: 0.97rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .panel-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .panel-badge {
+            background: var(--primary-soft);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+        .panel-body { padding: 24px; }
+        .panel-body-sm { padding: 20px; }
+
+        /* Chart containers — fixed height prevents weird jumps */
+        .chart-wrap {
+            position: relative;
+        }
+
+        .chart-wrap-bar   { height: 270px; }
+        .chart-wrap-donut { height: 220px; }
+        .chart-wrap-line  { height: 210px; }
+
+        /* ═══════════════════════════════════════
+           CATEGORY BREAKDOWN (inside donut panel)
+        ═══════════════════════════════════════ */
+        .cat-breakdown { margin-top: 20px; }
+
+        .cat-row {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cat-row:last-child { border-bottom: none; }
+
+        .cat-row-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .cat-name {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: var(--text-mid);
+        }
+
+        .cat-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .cat-stats {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .cat-bar-track {
+            height: 4px;
+            background: var(--border);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .cat-bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 0.8s cubic-bezier(.4,0,.2,1);
+        }
+
+        /* ═══════════════════════════════════════
+           DATA TABLE
+        ═══════════════════════════════════════ */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.88rem;
+        }
+
+        .data-table thead th {
+            padding: 11px 16px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: #F4F8FC;
+            border-bottom: 1.5px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .data-table thead th:first-child { border-radius: 0; padding-left: 20px; }
+        .data-table thead th:last-child  { padding-right: 20px; }
+
+        .data-table tbody td {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-mid);
+            vertical-align: middle;
+        }
+
+        .data-table tbody td:first-child { padding-left: 20px; }
+        .data-table tbody td:last-child  { padding-right: 20px; }
+
+        .data-table tbody tr:last-child td { border-bottom: none; }
+
+        .data-table tbody tr {
+            transition: background 0.15s;
+        }
+
+        .data-table tbody tr:hover td { background: #F4F9FF; }
+
+        /* Row number */
+        .row-num {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Code badge */
+        .code-badge {
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+            font-weight: 700;
+            background: var(--primary-soft);
+            color: var(--primary-dark);
+            padding: 3px 9px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        /* Name with avatar */
+        .name-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        /* Sensor data */
+        .sensor-val {
+            font-size: 0.83rem;
+            color: var(--text-mid);
+            white-space: nowrap;
+        }
+
+        .sensor-val .icon {
+            opacity: 0.55;
+            margin-right: 4px;
+            font-size: 0.75rem;
+        }
+
+        /* Score cell */
+        .score-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-num {
+            font-size: 1.05rem;
+            font-weight: 800;
+            min-width: 28px;
+        }
+
+        .score-bar {
+            flex: 1;
+            max-width: 56px;
+            height: 5px;
+            background: var(--border);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 100px;
+        }
+
+        /* Stress badges */
+        .badge-category {
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .badge-normal   { background: #dcfce7; color: #14532d; }
+        .badge-mild     { background: #fef9c3; color: #713f12; }
+        .badge-moderate { background: #ffedd5; color: #7c2d12; }
+        .badge-severe   { background: #fee2e2; color: #7f1d1d; }
+
+        /* Empty / loading */
+        .empty-state {
+            text-align: center;
+            padding: 56px 24px;
+        }
+
+        .empty-state .empty-icon {
+            width: 56px; height: 56px;
+            background: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin: 0 auto 14px;
+        }
+
+        .empty-state p { color: var(--text-muted); font-size: 0.9rem; }
+
+        .loading-cell {
+            padding: 48px 24px;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 38px; height: 38px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.85s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-cell p { color: var(--text-muted); font-size: 0.85rem; }
+
+        /* ═══════════════════════════════════════
+           UTILITY
+        ═══════════════════════════════════════ */
+        .section-gap { margin-bottom: 24px; }
+
+        .text-num { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-heartbeat me-2" style="color:var(--primary);-webkit-text-fill-color:var(--primary);"></i>IoT Stress Test
+        </a>
+        <div class="navbar-nav ms-auto d-flex align-items-center gap-1">
+            <a class="nav-link" href="/">Beranda</a>
+            <a class="nav-link" href="/test">Test</a>
+            <a class="nav-link active" href="/dashboard">Dashboard</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ── Page Header ── -->
+<div class="page-header">
+    <div class="container position-relative" style="z-index:1;">
+        <div class="row align-items-center g-3">
+            <div class="col">
+                <div class="header-badge">
+                    <i class="fas fa-chart-line fa-xs"></i>Analytics
+                </div>
+                <h1>Dashboard Analytics</h1>
+                <p class="sub">Monitoring hasil uji stress guru autis berbasis DASS-21 &amp; IoT</p>
+            </div>
+            <div class="col-auto">
+                <div class="header-actions">
+                    <button class="btn-header btn-header-ghost" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i>Refresh
+                    </button>
+                    <a href="/test" class="btn-header btn-header-solid">
+                        <i class="fas fa-plus"></i>Test Baru
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+
+    <!-- ── KPI Cards ── -->
+    <div class="row g-4 kpi-row">
+        <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card kpi-blue">
+                <div class="kpi-header">
+                    <div>
+                        <p class="kpi-label">Total Responden</p>
+                        <div class="kpi-value text-num" id="totalRespondents">—</div>
+                    </div>
+                    <div class="kpi-icon kpi-icon-blue"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="kpi-divider"></div>
+                <div class="kpi-footer">
+                    <span class="kpi-dot" style="background:var(--primary);"></span>
+                    Guru yang telah terdaftar
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card kpi-green">
+                <div class="kpi-header">
+                    <div>
+                        <p class="kpi-label">Test Selesai</p>
+                        <div class="kpi-value text-num" id="totalTests">—</div>
+                    </div>
+                    <div class="kpi-icon kpi-icon-green"><i class="fas fa-clipboard-check"></i></div>
+                </div>
+                <div class="kpi-divider"></div>
+                <div class="kpi-footer">
+                    <span class="kpi-dot" style="background:var(--success);"></span>
+                    Sesi test yang diselesaikan
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card kpi-amber">
+                <div class="kpi-header">
+                    <div>
+                        <p class="kpi-label">Rata-rata Skor</p>
+                        <div class="kpi-value text-num" id="avgScore">—</div>
+                    </div>
+                    <div class="kpi-icon kpi-icon-amber"><i class="fas fa-chart-bar"></i></div>
+                </div>
+                <div class="kpi-divider"></div>
+                <div class="kpi-footer">
+                    <span class="kpi-dot" style="background:var(--warning);"></span>
+                    Rata-rata skor DASS-21
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card kpi-teal">
+                <div class="kpi-header">
+                    <div>
+                        <p class="kpi-label">Skor Tertinggi</p>
+                        <div class="kpi-value text-num" id="maxScore">—</div>
+                    </div>
+                    <div class="kpi-icon kpi-icon-teal"><i class="fas fa-arrow-trend-up"></i></div>
+                </div>
+                <div class="kpi-divider"></div>
+                <div class="kpi-footer">
+                    <span class="kpi-dot" style="background:var(--secondary);"></span>
+                    Skor tertinggi tercatat
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Charts Row: Bar (wider) + Donut (narrower) ── -->
+    <div class="row g-4 section-gap">
+
+        <!-- Bar Chart — col-xl-8 for breathing room -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="panel h-100">
+                <div class="panel-head">
+                    <div class="panel-title-wrap">
+                        <div class="panel-icon"><i class="fas fa-chart-column"></i></div>
+                        <div>
+                            <div class="panel-title">Distribusi Level Stress</div>
+                            <div class="panel-subtitle">Jumlah responden per kategori DASS-21</div>
+                        </div>
+                    </div>
+                    <!-- Color legend -->
+                    <div class="d-flex align-items-center gap-3 d-none d-md-flex">
+                        <span style="font-size:0.75rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:5px;">
+                            <span style="width:10px;height:10px;border-radius:3px;background:#22C55E;display:inline-block;"></span>Normal
+                        </span>
+                        <span style="font-size:0.75rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:5px;">
+                            <span style="width:10px;height:10px;border-radius:3px;background:#F59E0B;display:inline-block;"></span>Mild
+                        </span>
+                        <span style="font-size:0.75rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:5px;">
+                            <span style="width:10px;height:10px;border-radius:3px;background:#F97316;display:inline-block;"></span>Moderate
+                        </span>
+                        <span style="font-size:0.75rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:5px;">
+                            <span style="width:10px;height:10px;border-radius:3px;background:#EF4444;display:inline-block;"></span>Severe
+                        </span>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="chart-wrap chart-wrap-bar">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Donut Chart + Category Breakdown — col-xl-4 -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="panel h-100">
+                <div class="panel-head">
+                    <div class="panel-title-wrap">
+                        <div class="panel-icon" style="background:#f0eeff;color:var(--accent);"><i class="fas fa-chart-pie"></i></div>
+                        <div>
+                            <div class="panel-title">Sebaran Kategori</div>
+                            <div class="panel-subtitle">Persentase distribusi level</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body-sm">
+                    <div class="chart-wrap chart-wrap-donut">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                    <!-- Category breakdown rows -->
+                    <div class="cat-breakdown" id="catBreakdown">
+                        <div class="cat-row" id="catRow0">
+                            <div class="cat-row-head">
+                                <div class="cat-name">
+                                    <span class="cat-dot" style="background:#22C55E;"></span>Normal
+                                </div>
+                                <div class="cat-stats">
+                                    <span class="cat-count">0</span> · <span class="cat-pct">0%</span>
+                                </div>
+                            </div>
+                            <div class="cat-bar-track">
+                                <div class="cat-bar-fill" style="background:#22C55E;width:0%;"></div>
+                            </div>
+                        </div>
+                        <div class="cat-row" id="catRow1">
+                            <div class="cat-row-head">
+                                <div class="cat-name">
+                                    <span class="cat-dot" style="background:#F59E0B;"></span>Mild
+                                </div>
+                                <div class="cat-stats">
+                                    <span class="cat-count">0</span> · <span class="cat-pct">0%</span>
+                                </div>
+                            </div>
+                            <div class="cat-bar-track">
+                                <div class="cat-bar-fill" style="background:#F59E0B;width:0%;"></div>
+                            </div>
+                        </div>
+                        <div class="cat-row" id="catRow2">
+                            <div class="cat-row-head">
+                                <div class="cat-name">
+                                    <span class="cat-dot" style="background:#F97316;"></span>Moderate
+                                </div>
+                                <div class="cat-stats">
+                                    <span class="cat-count">0</span> · <span class="cat-pct">0%</span>
+                                </div>
+                            </div>
+                            <div class="cat-bar-track">
+                                <div class="cat-bar-fill" style="background:#F97316;width:0%;"></div>
+                            </div>
+                        </div>
+                        <div class="cat-row" id="catRow3">
+                            <div class="cat-row-head">
+                                <div class="cat-name">
+                                    <span class="cat-dot" style="background:#EF4444;"></span>Severe
+                                </div>
+                                <div class="cat-stats">
+                                    <span class="cat-count">0</span> · <span class="cat-pct">0%</span>
+                                </div>
+                            </div>
+                            <div class="cat-bar-track">
+                                <div class="cat-bar-fill" style="background:#EF4444;width:0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Score Distribution Line Chart (full width) ── -->
+    <div class="row g-4 section-gap">
+        <div class="col-12">
+            <div class="panel">
+                <div class="panel-head">
+                    <div class="panel-title-wrap">
+                        <div class="panel-icon" style="background:var(--secondary-soft);color:var(--secondary);"><i class="fas fa-chart-area"></i></div>
+                        <div>
+                            <div class="panel-title">Tren Distribusi Skor DASS-21</div>
+                            <div class="panel-subtitle">Frekuensi skor responden berdasarkan rentang nilai</div>
+                        </div>
+                    </div>
+                    <!-- Score range legend -->
+                    <div class="d-none d-md-flex align-items-center gap-2">
+                        <span style="width:28px;height:3px;border-radius:2px;background:var(--primary);display:inline-block;"></span>
+                        <span style="font-size:0.78rem;font-weight:600;color:var(--text-muted);">Frekuensi skor</span>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="chart-wrap chart-wrap-line">
+                        <canvas id="scoreChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Data Table ── -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="panel">
+                <div class="panel-head">
+                    <div class="panel-title-wrap">
+                        <div class="panel-icon" style="background:#fff7ed;color:var(--orange);"><i class="fas fa-table-list"></i></div>
+                        <div>
+                            <div class="panel-title">Data Hasil Test</div>
+                            <div class="panel-subtitle">Rekap lengkap seluruh sesi pengujian</div>
+                        </div>
+                    </div>
+                    <span class="panel-badge" id="tableCount">— data</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Kode</th>
+                                <th>Nama Responden</th>
+                                <th>Tanggal</th>
+                                <th>Detak Jantung</th>
+                                <th>Suhu Tubuh</th>
+                                <th>Skor DASS-21</th>
+                                <th>Level Stress</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTable">
+                            <tr>
+                                <td colspan="8" class="loading-cell">
+                                    <div class="spinner"></div>
+                                    <p>Memuat data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    /* ── Chart.js plugin: center text for donut ── */
+    const centerTextPlugin = {
+        id: 'centerText',
+        afterDraw(chart) {
+            if (chart.config.type !== 'doughnut') return;
+            const { ctx } = chart;
+            const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+            const cx = (chart.chartArea.left + chart.chartArea.right) / 2;
+            const cy = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+            ctx.save();
+            ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = '#0F1E2E';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(total, cx, cy - 8);
+            ctx.font = '600 10px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = '#7E94AF';
+            ctx.fillText('TOTAL', cx, cy + 10);
+            ctx.restore();
+        }
+    };
+    Chart.register(centerTextPlugin);
+
+    /* ── State ── */
+    let categoryChart, pieChart, scoreChart;
+    const CAT_LABELS = ['Normal', 'Mild', 'Moderate', 'Severe'];
+    const CAT_COLORS = ['#22C55E', '#F59E0B', '#F97316', '#EF4444'];
+    const SCORE_MAX  = 42;
+
+    /* ── Main loader ── */
+    async function loadDashboard() {
+        try {
+            const [statsRes, resultsRes] = await Promise.all([
+                fetch('/api/statistics'),
+                fetch('/api/results')
+            ]);
+            const stats   = await statsRes.json();
+            const results = await resultsRes.json();
+
+            populateKPIs(stats);
+            renderTable(results);
+            renderCharts(stats, results);
+        } catch (err) {
+            console.error('Dashboard load error:', err);
+        }
+    }
+
+    /* ── KPI population ── */
+    function populateKPIs(stats) {
+        document.getElementById('totalRespondents').textContent = stats.total_respondents;
+        document.getElementById('totalTests').textContent       = stats.total_tests;
+        document.getElementById('avgScore').textContent         = stats.average_score;
+        document.getElementById('maxScore').textContent         = stats.max_score;
+    }
+
+    /* ── Table rendering ── */
+    function renderTable(results) {
+        const tbody = document.getElementById('resultsTable');
+        const countEl = document.getElementById('tableCount');
+        if (countEl) countEl.textContent = results.length + ' data';
+
+        if (results.length === 0) {
+            tbody.innerHTML = `
+                <tr><td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                        <p>Belum ada data test. <a href="/test" style="color:var(--primary);font-weight:600;">Mulai test pertama &rarr;</a></p>
+                    </div>
+                </td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = results.map((r, i) => {
+            const badgeClass  = getBadgeClass(r.stress_category);
+            const scoreColor  = CAT_COLORS[Math.min(parseInt(r.stress_category), 3)] || '#8898AA';
+            const scorePct    = Math.min((r.dass21_final_score / SCORE_MAX) * 100, 100).toFixed(0);
+            const initials    = getInitials(r.name);
+            const avatarColor = CAT_COLORS[i % CAT_COLORS.length];
+
+            return `
+            <tr>
+                <td class="row-num">${i + 1}</td>
+                <td><span class="code-badge">${r.code}</span></td>
+                <td>
+                    <div class="name-cell">
+                        <div class="avatar" style="background:${avatarColor}18;color:${avatarColor};">${initials}</div>
+                        <span style="font-weight:600;color:var(--text);">${r.name || '—'}</span>
+                    </div>
+                </td>
+                <td style="white-space:nowrap;font-size:0.83rem;">
+                    ${formatDate(r.test_date)}
+                </td>
+                <td class="sensor-val">
+                    ${r.heart_rate_test1
+                        ? `<i class="fas fa-heartbeat icon" style="color:#ef4444;"></i>${r.heart_rate_test1}&thinsp;/&thinsp;${r.heart_rate_test2} <span style="opacity:.5;font-size:.75rem;">BPM</span>`
+                        : '<span style="color:var(--text-muted);">—</span>'}
+                </td>
+                <td class="sensor-val">
+                    ${r.temperature_test1
+                        ? `<i class="fas fa-thermometer-half icon" style="color:#f59e0b;"></i>${r.temperature_test1}&thinsp;/&thinsp;${r.temperature_test2}<span style="opacity:.5;font-size:.75rem;">°C</span>`
+                        : '<span style="color:var(--text-muted);">—</span>'}
+                </td>
+                <td>
+                    <div class="score-cell">
+                        <span class="score-num" style="color:${scoreColor};">${r.dass21_final_score}</span>
+                        <div class="score-bar">
+                            <div class="score-bar-fill" style="width:${scorePct}%;background:${scoreColor};"></div>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="badge-category ${badgeClass}">${r.stress_level}</span></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function getBadgeClass(cat) {
+        switch (parseInt(cat)) {
+            case 0: return 'badge-normal';
+            case 1: return 'badge-mild';
+            case 2: return 'badge-moderate';
+            default: return 'badge-severe';
+        }
+    }
+
+    function getInitials(name) {
+        if (!name) return '?';
+        return name.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '—';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    /* ── Charts ── */
+    function renderCharts(stats, results) {
+        const catData = stats.category_distribution;
+        const counts  = [0, 0, 0, 0];
+        catData.forEach(c => { if (c.category < 4) counts[c.category] = c.count; });
+
+        renderBarChart(counts);
+        renderDonutChart(counts);
+        renderLineChart(results);
+        renderCategoryBreakdown(counts);
+    }
+
+    function renderBarChart(counts) {
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+        categoryChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: CAT_LABELS,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: CAT_COLORS.map(c => c + '22'),
+                    borderColor: CAT_COLORS,
+                    borderWidth: 2,
+                    borderRadius: 10,
+                    borderSkipped: false,
+                    hoverBackgroundColor: CAT_COLORS.map(c => c + '44'),
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: {
+                    backgroundColor: '#0F1E2E',
+                    padding: 10,
+                    titleFont: { family: 'Plus Jakarta Sans', weight: '700', size: 13 },
+                    bodyFont:  { family: 'Plus Jakarta Sans', size: 12 },
+                    callbacks: {
+                        label: ctx => `  ${ctx.parsed.y} Responden`
+                    }
+                }},
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#7E94AF' },
+                        grid: { color: '#EDF2F8', drawBorder: false }
+                    },
+                    x: {
+                        ticks: { font: { family: 'Plus Jakarta Sans', weight: '600', size: 12 }, color: '#3D5170' },
+                        grid: { display: false }
+                    }
+                },
+                animation: { duration: 800, easing: 'easeOutQuart' }
+            }
+        });
+    }
+
+    function renderDonutChart(counts) {
+        const ctx = document.getElementById('pieChart').getContext('2d');
+        pieChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: CAT_LABELS,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: CAT_COLORS,
+                    borderWidth: 0,
+                    hoverOffset: 8,
+                    spacing: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0F1E2E',
+                        padding: 10,
+                        titleFont: { family: 'Plus Jakarta Sans', weight: '700', size: 13 },
+                        bodyFont:  { family: 'Plus Jakarta Sans', size: 12 },
+                        callbacks: {
+                            label: ctx => {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct   = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
+                                return `  ${ctx.parsed} responden (${pct}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: { duration: 900, easing: 'easeOutQuart' }
+            }
+        });
+    }
+
+    function renderLineChart(results) {
+        const scores = results.map(r => r.dass21_final_score);
+        const bins   = [0, 5, 10, 15, 20, 25, 30, 35];
+        const hist   = new Array(bins.length - 1).fill(0);
+        scores.forEach(s => {
+            for (let i = 0; i < bins.length - 1; i++) {
+                if (s >= bins[i] && s < bins[i + 1]) { hist[i]++; break; }
+            }
+        });
+
+        const ctx = document.getElementById('scoreChart').getContext('2d');
+
+        /* Create gradient fill */
+        const grad = ctx.createLinearGradient(0, 0, 0, 200);
+        grad.addColorStop(0, 'rgba(45,125,210,0.18)');
+        grad.addColorStop(1, 'rgba(45,125,210,0.01)');
+
+        scoreChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: bins.slice(0, -1).map((b, i) => `${b}–${bins[i + 1] - 1}`),
+                datasets: [{
+                    label: 'Frekuensi',
+                    data: hist,
+                    borderColor: '#2D7DD2',
+                    backgroundColor: grad,
+                    fill: true,
+                    tension: 0.42,
+                    pointBackgroundColor: '#2D7DD2',
+                    pointBorderColor: '#FFFFFF',
+                    pointBorderWidth: 2.5,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    borderWidth: 2.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0F1E2E',
+                        padding: 10,
+                        titleFont: { family: 'Plus Jakarta Sans', weight: '700', size: 13 },
+                        bodyFont:  { family: 'Plus Jakarta Sans', size: 12 },
+                        callbacks: {
+                            label: ctx => `  ${ctx.parsed.y} responden`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#7E94AF' },
+                        grid: { color: '#EDF2F8', drawBorder: false }
+                    },
+                    x: {
+                        ticks: { font: { family: 'Plus Jakarta Sans', weight: '600', size: 11 }, color: '#3D5170' },
+                        grid: { display: false }
+                    }
+                },
+                animation: { duration: 1000, easing: 'easeOutQuart' }
+            }
+        });
+    }
+
+    function renderCategoryBreakdown(counts) {
+        const total = counts.reduce((a, b) => a + b, 0);
+        counts.forEach((c, i) => {
+            const row = document.getElementById(`catRow${i}`);
+            if (!row) return;
+            const pct = total > 0 ? Math.round((c / total) * 100) : 0;
+            row.querySelector('.cat-count').textContent = c;
+            row.querySelector('.cat-pct').textContent   = pct + '%';
+            row.querySelector('.cat-bar-fill').style.width = pct + '%';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>

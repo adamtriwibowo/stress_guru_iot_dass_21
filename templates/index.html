@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Stress Test — Sistem Uji Stress Guru Autis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2D7DD2;
+            --primary-dark: #1E68C4;
+            --primary-soft: #EBF4FF;
+            --secondary: #14B8A6;
+            --secondary-soft: #EFFAF9;
+            --accent: #7C6FCB;
+            --accent-soft: #F0EEFF;
+            --success: #22C55E;
+            --success-soft: #F0FDF4;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg: #F4F8FC;
+            --surface: #FFFFFF;
+            --border: #DEE6EF;
+            --text: #1A2635;
+            --text-mid: #4A5568;
+            --text-muted: #8898AA;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 0;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-link {
+            font-weight: 600;
+            color: var(--text-mid) !important;
+            padding: 7px 15px !important;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover, .nav-link.active-link {
+            color: var(--primary) !important;
+            background: var(--primary-soft);
+        }
+
+        .btn-nav {
+            background: var(--primary);
+            color: white !important;
+            padding: 8px 20px !important;
+            border-radius: 50px !important;
+            font-weight: 700 !important;
+            font-size: 0.88rem !important;
+            transition: all 0.25s ease;
+        }
+
+        .btn-nav:hover {
+            background: var(--primary-dark) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(45,125,210,0.3);
+        }
+
+        /* ── Hero ── */
+        .hero-section {
+            background: linear-gradient(135deg, #0D2B55 0%, #1864AB 50%, #0B7285 100%);
+            padding: 120px 0 90px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -15%;
+            width: 55%;
+            height: 180%;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.04) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: -5%;
+            width: 45%;
+            height: 120%;
+            background: radial-gradient(ellipse, rgba(20,184,166,0.12) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.22);
+            padding: 7px 16px;
+            border-radius: 50px;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 22px;
+            letter-spacing: 0.02em;
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 4.5vw, 3.4rem);
+            font-weight: 800;
+            color: #FFFFFF;
+            line-height: 1.2;
+            margin-bottom: 18px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-title span { color: #7DD3FA; }
+
+        .hero-subtitle {
+            font-size: 1.05rem;
+            color: rgba(255,255,255,0.78);
+            margin-bottom: 38px;
+            max-width: 540px;
+            line-height: 1.75;
+        }
+
+        .btn-hero-primary {
+            background: #FFFFFF;
+            color: var(--primary);
+            padding: 14px 30px;
+            border-radius: 50px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.97rem;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 32px rgba(0,0,0,0.22);
+            color: var(--primary-dark);
+        }
+
+        .btn-hero-outline {
+            background: transparent;
+            color: rgba(255,255,255,0.9);
+            padding: 14px 28px;
+            border-radius: 50px;
+            border: 1.5px solid rgba(255,255,255,0.35);
+            font-weight: 600;
+            font-size: 0.97rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hero-outline:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.65);
+            color: #FFFFFF;
+            transform: translateY(-2px);
+        }
+
+        .glass-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .glass-card h4 { color: white; font-weight: 700; font-size: 1.05rem; }
+        .glass-card p  { color: rgba(255,255,255,0.75); font-size: 0.9rem; }
+
+        .glass-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.9);
+            font-size: 0.93rem;
+        }
+
+        .glass-check:last-child { border-bottom: none; }
+
+        .check-dot {
+            width: 26px;
+            height: 26px;
+            background: rgba(20,184,166,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.65rem;
+            color: #5eead4;
+            margin-top: 2px;
+        }
+
+        /* ── Section Labels ── */
+        .section-badge {
+            display: inline-block;
+            background: var(--primary-soft);
+            color: var(--primary);
+            padding: 5px 14px;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .section-sub {
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 580px;
+            margin: 0 auto 48px;
+            line-height: 1.7;
+        }
+
+        /* ── Features ── */
+        .features-section {
+            padding: 96px 0;
+            background: var(--surface);
+        }
+
+        .feature-card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 34px;
+            border: 1.5px solid var(--border);
+            transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transition: transform 0.35s ease;
+            transform-origin: left;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 12px 40px rgba(45,125,210,0.12);
+            border-color: rgba(45,125,210,0.15);
+        }
+
+        .feature-card:hover::after { transform: scaleX(1); }
+
+        .feat-icon {
+            width: 62px;
+            height: 62px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 22px;
+        }
+
+        .feature-card h4 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            line-height: 1.75;
+            font-size: 0.93rem;
+        }
+
+        /* ── Stats ── */
+        .stats-section {
+            padding: 72px 0;
+            background: var(--bg);
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border-radius: 18px;
+            padding: 30px 24px;
+            text-align: center;
+            border: 1.5px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 8px 32px rgba(45,125,210,0.1);
+            border-color: var(--primary);
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .stat-number.is-success {
+            background: linear-gradient(135deg, var(--success), #16a34a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* ── Categories ── */
+        .categories-section {
+            padding: 96px 0;
+            background: var(--surface);
+        }
+
+        .cat-card {
+            border-radius: 18px;
+            padding: 28px 22px;
+            text-align: center;
+            border: 1.5px solid var(--border);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .cat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 32px rgba(0,0,0,0.08);
+        }
+
+        .cat-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            margin-bottom: 14px;
+        }
+
+        .cat-card h5  { font-weight: 700; margin-bottom: 4px; font-size: 1rem; }
+        .cat-score    { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        .cat-card p   { font-size: 0.88rem; color: var(--text-muted); margin: 0; }
+
+        .cat-normal   { border-color: #d1fae5; }
+        .cat-normal   .cat-icon { background: #d1fae5; color: #065f46; }
+        .cat-normal   h5 { color: #065f46; }
+
+        .cat-mild     { border-color: #fef3c7; }
+        .cat-mild     .cat-icon { background: #fef3c7; color: #92400e; }
+        .cat-mild     h5 { color: #92400e; }
+
+        .cat-moderate { border-color: #fed7aa; }
+        .cat-moderate .cat-icon { background: #fed7aa; color: #9a3412; }
+        .cat-moderate h5 { color: #9a3412; }
+
+        .cat-severe   { border-color: #fecaca; }
+        .cat-severe   .cat-icon { background: #fecaca; color: #991b1b; }
+        .cat-severe   h5 { color: #991b1b; }
+
+        /* ── Footer ── */
+        .footer {
+            background: #0D1B2A;
+            color: rgba(255,255,255,0.65);
+            padding: 44px 0;
+        }
+
+        .footer-brand {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .footer-brand i { color: var(--secondary); }
+        .footer p { font-size: 0.88rem; }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-heartbeat me-2" style="color:var(--primary);-webkit-text-fill-color:var(--primary);"></i>IoT Stress Test
+            </a>
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <div class="navbar-nav ms-auto d-flex align-items-center gap-1">
+                    <a class="nav-link active-link" href="/">Beranda</a>
+                    <a class="nav-link" href="/test">Mulai Test</a>
+                    <a class="nav-link" href="/dashboard">Dashboard</a>
+                    <a class="nav-link btn-nav ms-2" href="/test">
+                        <i class="fas fa-play me-1"></i>Mulai
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero-section">
+        <div class="container position-relative" style="z-index:1;">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-7">
+                    <div class="hero-badge">
+                        <i class="fas fa-wifi fa-sm"></i>
+                        Berbasis IoT &amp; DASS-21
+                    </div>
+                    <h1 class="hero-title">
+                        Sistem Uji Stress<br>
+                        <span>Guru Pendamping Autis</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Platform komprehensif untuk memahami kondisi psikologis guru menggunakan
+                        sensor IoT dan instrumen DASS-21 yang terstandarisasi secara internasional.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="/test" class="btn-hero-primary">
+                            <i class="fas fa-play-circle"></i>Mulai Test Sekarang
+                        </a>
+                        <a href="/dashboard" class="btn-hero-outline">
+                            <i class="fas fa-chart-line"></i>Lihat Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-5 mt-2 mt-lg-0">
+                    <div class="glass-card">
+                        <h4 class="mb-1">
+                            <i class="fas fa-info-circle me-2" style="color:#7DD3FA;"></i>Tentang DASS-21
+                        </h4>
+                        <p class="mb-4">Instrumen psikologis tervalidasi untuk mengukur kondisi mental Anda secara akurat</p>
+                        <div>
+                            <div class="glass-check">
+                                <div class="check-dot"><i class="fas fa-check fa-xs"></i></div>
+                                <div><strong>Depresi</strong> — kondisi emosional &amp; motivasi diri</div>
+                            </div>
+                            <div class="glass-check">
+                                <div class="check-dot"><i class="fas fa-check fa-xs"></i></div>
+                                <div><strong>Kecemasan</strong> — tingkat kekhawatiran &amp; rasa takut</div>
+                            </div>
+                            <div class="glass-check">
+                                <div class="check-dot"><i class="fas fa-check fa-xs"></i></div>
+                                <div><strong>Stress</strong> — tekanan psikologis &amp; ketegangan</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="section-badge">Fitur Sistem</span>
+                <h2 class="section-title">Dirancang untuk Membantu Guru</h2>
+                <p class="section-sub">
+                    Tiga pilar utama yang memberikan pemahaman menyeluruh tentang kondisi stress Anda
+                </p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feat-icon" style="background:var(--primary-soft);">
+                            <i class="fas fa-clipboard-list" style="color:var(--primary);"></i>
+                        </div>
+                        <h4>Kuesioner DASS-21</h4>
+                        <p>
+                            21 pertanyaan terstandarisasi untuk mengukur tingkat stress, kecemasan, dan depresi
+                            berdasarkan standar psikologis internasional yang telah divalidasi secara klinis.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feat-icon" style="background:var(--secondary-soft);">
+                            <i class="fas fa-heartbeat" style="color:var(--secondary);"></i>
+                        </div>
+                        <h4>Sensor IoT Real-time</h4>
+                        <p>
+                            Integrasi sensor detak jantung dan suhu tubuh untuk memberikan data fisiologis
+                            yang memperkuat analisis stress secara objektif dan komprehensif.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feat-icon" style="background:var(--accent-soft);">
+                            <i class="fas fa-chart-line" style="color:var(--accent);"></i>
+                        </div>
+                        <h4>Dashboard Analitik</h4>
+                        <p>
+                            Visualisasi data interaktif dengan grafik yang mudah dipahami untuk memantau
+                            tren stress dan membuat keputusan berbasis data yang akurat.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row g-4" id="statsSection">
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalRespondents">0</span>
+                        <div class="stat-label">Total Responden</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalTests">0</span>
+                        <div class="stat-label">Test Selesai</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <span class="stat-number" id="avgScore">0</span>
+                        <div class="stat-label">Rata-rata Skor</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <span class="stat-number is-success" id="normalPercent">0%</span>
+                        <div class="stat-label">Kondisi Normal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="categories-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="section-badge">Interpretasi Skor</span>
+                <h2 class="section-title">Kategori Level Stress</h2>
+                <p class="section-sub">
+                    DASS-21 mengategorikan tingkat stress dalam 4 level berdasarkan skor akhir yang diperoleh
+                </p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="cat-card cat-normal">
+                        <div class="cat-icon"><i class="fas fa-smile"></i></div>
+                        <h5>Normal</h5>
+                        <div class="cat-score">Skor: 0 — 14</div>
+                        <p>Tidak ada indikasi stress yang bermakna</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="cat-card cat-mild">
+                        <div class="cat-icon"><i class="fas fa-meh"></i></div>
+                        <h5>Mild / Ringan</h5>
+                        <div class="cat-score">Skor: 15 — 18</div>
+                        <p>Stress ringan, perlu perhatian lebih</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="cat-card cat-moderate">
+                        <div class="cat-icon"><i class="fas fa-frown"></i></div>
+                        <h5>Moderate / Sedang</h5>
+                        <div class="cat-score">Skor: 19 — 25</div>
+                        <p>Stress sedang, butuh intervensi dini</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="cat-card cat-severe">
+                        <div class="cat-icon"><i class="fas fa-dizzy"></i></div>
+                        <h5>Severe / Berat</h5>
+                        <div class="cat-score">Skor: 26+</div>
+                        <p>Stress berat, segera konsultasi profesional</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <div class="footer-brand">
+                        <i class="fas fa-heartbeat"></i>IoT Stress Test
+                    </div>
+                    <p class="mb-0">Sistem Informasi Uji Stress Guru Autis berbasis DASS-21 &amp; IoT</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0">&copy; 2026 IoT Stress Test System. All rights reserved.</p>
+                    <p class="mb-0 mt-1" style="font-size:0.8rem;color:rgba(255,255,255,0.3);">Powered by Flask &amp; Chart.js</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/statistics');
+                const stats = await response.json();
+
+                document.getElementById('totalRespondents').textContent = stats.total_respondents;
+                document.getElementById('totalTests').textContent = stats.total_tests;
+                document.getElementById('avgScore').textContent = stats.average_score;
+
+                const normalCount = stats.category_distribution.find(c => c.category === 0);
+                const percent = stats.total_tests > 0 ? Math.round((normalCount.count / stats.total_tests) * 100) : 0;
+                document.getElementById('normalPercent').textContent = percent + '%';
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadStatistics);
+    </script>
+</body>
+</html>
