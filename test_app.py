@@ -63,16 +63,32 @@ with app.test_client() as client:
     
     # Test API endpoints
     response = client.get('/api/questions')
-    print(f"  GET /api/questions -> {response.status_code} ({len(response.json)} questions)")
+    if response.status_code == 200:
+        questions_data = response.get_json()
+        print(f"  GET /api/questions -> {response.status_code} ({len(questions_data)} questions)")
+    else:
+        print(f"  GET /api/questions -> {response.status_code} (Error: {response.data})")
     
     response = client.get('/api/statistics')
-    print(f"  GET /api/statistics -> {response.status_code}")
+    if response.status_code == 200:
+        stats_data = response.get_json()
+        print(f"  GET /api/statistics -> {response.status_code}")
+    else:
+        print(f"  GET /api/statistics -> {response.status_code} (Error: {response.data})")
     
     response = client.get('/api/respondents')
-    print(f"  GET /api/respondents -> {response.status_code}")
+    if response.status_code == 200:
+        respondents_data = response.get_json()
+        print(f"  GET /api/respondents -> {response.status_code} ({len(respondents_data)} respondents)")
+    else:
+        print(f"  GET /api/respondents -> {response.status_code} (Error: {response.data})")
     
     response = client.get('/api/results')
-    print(f"  GET /api/results -> {response.status_code}")
+    if response.status_code == 200:
+        results_data = response.get_json()
+        print(f"  GET /api/results -> {response.status_code} ({len(results_data)} results)")
+    else:
+        print(f"  GET /api/results -> {response.status_code} (Error: {response.data})")
 
 print("\n✓ All tests completed successfully!")
 print("\n🚀 System is ready to run. Use: python app.py")
