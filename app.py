@@ -276,6 +276,62 @@ def receive_sensor_data():
         "timestamp": datetime.now().isoformat()
     })
 
+@app.route('/api/demo/populate', methods=['POST'])
+def populate_demo_data():
+    """Endpoint untuk populate demo data untuk testing dashboard"""
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    
+    # Clear existing data
+    cursor.execute('DELETE FROM test_results')
+    cursor.execute('DELETE FROM respondents')
+    
+    # Insert demo respondents
+    demo_respondents = [
+        ('GURU001', 'Budi Santoso', 35, 'M', 8),
+        ('GURU002', 'Siti Nurhaliza', 32, 'F', 6),
+        ('GURU003', 'Ahmad Rahman', 45, 'M', 15),
+        ('GURU004', 'Dewi Lestari', 28, 'F', 3),
+        ('GURU005', 'Rudi Hermawan', 52, 'M', 20),
+    ]
+    
+    respondent_ids = []
+    for code, name, age, gender, exp in demo_respondents:
+        cursor.execute(
+            'INSERT INTO respondents (code, name, age, gender, teaching_experience) VALUES (?, ?, ?, ?, ?)',
+            (code, name, age, gender, exp)
+        )
+        respondent_ids.append(cursor.lastrowid)
+    
+    # Insert demo test results with varying stress levels
+    demo_scores = [
+        (respondent_ids[0], 68.0, 72.0, 36.5, 36.8, 8, 16, 0, 'Normal'),      # Normal
+        (respondent_ids[1], 92.0, 95.0, 37.2, 37.5, 10, 20, 1, 'Mild'),        # Mild
+        (respondent_ids[2], 110.0, 115.0, 38.1, 38.5, 14, 28, 2, 'Moderate'),  # Moderate
+        (respondent_ids[3], 78.0, 82.0, 37.0, 37.3, 7, 14, 0, 'Normal'),       # Normal
+        (respondent_ids[4], 125.0, 130.0, 38.8, 39.2, 18, 36, 3, 'Severe'),    # Severe
+        (respondent_ids[0], 85.0, 88.0, 37.1, 37.4, 9, 18, 1, 'Mild'),         # Mild
+        (respondent_ids[1], 105.0, 108.0, 38.0, 38.4, 13, 26, 2, 'Moderate'),  # Moderate
+        (respondent_ids[2], 98.0, 102.0, 37.9, 38.2, 11, 22, 1, 'Mild'),       # Mild
+    ]
+    
+    for resp_id, hr1, hr2, temp1, temp2, raw_score, final_score, cat, level in demo_scores:
+        cursor.execute('''
+            INSERT INTO test_results 
+            (respondent_id, heart_rate_test1, heart_rate_test2, temperature_test1, temperature_test2,
+             dass21_raw_score, dass21_final_score, stress_category, stress_level, answers)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (resp_id, hr1, hr2, temp1, temp2, raw_score, final_score, cat, level, '{}'))
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({
+        "message": "Demo data berhasil di-populate",
+        "respondents": len(demo_respondents),
+        "test_results": len(demo_scores)
+    }), 201
+
 # Initialize database on startup
 init_db()
 
