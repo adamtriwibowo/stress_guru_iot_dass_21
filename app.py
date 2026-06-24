@@ -276,8 +276,13 @@ def receive_sensor_data():
         "timestamp": datetime.now().isoformat()
     })
 
+# Initialize database on startup
+init_db()
+
+# Export app for WSGI servers (Vercel, Gunicorn, etc)
+wsgi_app = app
+
 if __name__ == '__main__':
-    init_db()
     import os
     debug = os.getenv('FLASK_ENV') != 'production'
     port = int(os.getenv('PORT', 5000))
