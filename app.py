@@ -13,7 +13,12 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-DATABASE = 'stress_test.db'
+# Gunakan /tmp untuk database di production (Vercel), atau current directory untuk development
+import os
+if os.getenv('FLASK_ENV') == 'production':
+    DATABASE = '/tmp/stress_test.db'
+else:
+    DATABASE = 'stress_test.db'
 
 # Initialize database
 def init_db():
@@ -273,5 +278,8 @@ def receive_sensor_data():
 
 if __name__ == '__main__':
     init_db()
-    print("🚀 Server berjalan di http://localhost:5000")
-    app.run(debug=True, port=5000)
+    import os
+    debug = os.getenv('FLASK_ENV') != 'production'
+    port = int(os.getenv('PORT', 5000))
+    print(f"🚀 Server berjalan di http://localhost:{port}")
+    app.run(debug=debug, port=port, host='0.0.0.0')
